@@ -12,53 +12,49 @@
             height: 100vh;
             margin: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            overflow: hidden; /* Importante para os corações não criarem scroll */
+            overflow: hidden;
             
-            /* --- CONFIGURAÇÃO DA IMAGEM DE FUNDO --- */
-            /* Certifica-te que o nome da imagem aqui é IGUAL ao que subestime para o GitHub */
-            background-image: url('background.png'); 
-            background-size: cover;     /* Faz a imagem cobrir todo o ecrã */
-            background-position: center; /* Centra a imagem */
+            /* --- IMAGEM DE FUNDO --- */
+            /* Garante que o nome 'background.jpg' é igual ao ficheiro que subiste */
+            background-image: url('background.jpg'); 
+            background-size: cover;
+            background-position: center;
             background-repeat: no-repeat;
-            /* Cor de recurso caso a imagem demore a carregar */
             background-color: #ffe4e1;
-            transition: background-color 0.5s ease;
         }
 
-        /* Um filtro escuro suave sobre a imagem para o texto se ler melhor */
         body::before {
             content: '';
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 0, 0, 0.2); /* Ajusta o 0.2 para mais escuro ou mais claro */
+            background: rgba(0, 0, 0, 0.2);
             z-index: 1;
         }
 
         #card {
-            background: rgba(255, 255, 255, 0.95); /* Fundo do cartão ligeiramente mais opaco */
-            padding: 2rem;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 2.5rem;
             border-radius: 20px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
             width: 85%;
             max-width: 400px;
             text-align: center;
-            z-index: 10; /* Garante que o cartão está acima do fundo e dos corações */
+            z-index: 10;
             position: relative;
         }
 
         h1 {
             color: #d63384;
-            font-size: 1.5rem;
-            margin-bottom: 1.5rem;
+            font-size: 1.6rem;
+            margin-bottom: 2rem;
         }
 
         .buttons {
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 15px;
-            height: 50px;
-            position: relative; /* Necessário para o botão fugir corretamente */
+            gap: 20px;
+            min-height: 60px;
         }
 
         button {
@@ -69,12 +65,7 @@
             cursor: pointer;
             font-weight: bold;
             touch-action: manipulation;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             transition: transform 0.1s;
-        }
-        
-        button:active {
-            transform: scale(0.95);
         }
 
         #yesBtn {
@@ -83,20 +74,20 @@
             z-index: 20;
         }
 
+        /* O botão Não começa sem posição absoluta para aparecer ao lado do Sim */
         #noBtn {
             background-color: #888;
             color: white;
-            position: absolute; /* Mudado para absolute para fugir melhor dentro do contentor */
-            transition: all 0.2s ease;
             z-index: 15;
+            transition: all 0.2s ease;
         }
 
         #message {
             display: none;
-            font-size: 1.3rem;
+            font-size: 1.4rem;
             color: #ff4d6d;
             font-weight: bold;
-            animation: appear 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Efeito elástico */
+            animation: appear 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         @keyframes appear {
@@ -106,26 +97,21 @@
 
         .heart-icon {
             color: #ff4d6d;
-            font-size: 3rem;
+            font-size: 3.5rem;
             margin-bottom: 10px;
         }
 
-        /* --- ESTILO DOS CORAÇÕES A CAIR --- */
         .falling-heart {
             position: fixed;
             top: -10vh;
             font-size: 1.5rem;
             color: #ff4d6d;
-            opacity: 0.8;
-            z-index: 5; /* Ficam atrás do cartão */
+            z-index: 5;
             animation: fall linear forwards;
-            pointer-events: none; /* Para não interferirem com cliques */
         }
 
         @keyframes fall {
-            to {
-                transform: translateY(110vh) rotate(360deg); /* Caem até sair do ecrã e rodam */
-            }
+            to { transform: translateY(110vh) rotate(360deg); }
         }
     </style>
 </head>
@@ -135,7 +121,7 @@
         <div class="heart-icon">❤️</div>
         <h1 id="question">Queres ser a minha Valentine?</h1>
         
-        <div class="buttons" id="btnContainer" style="height: 60px;">
+        <div class="buttons" id="btnContainer">
             <button id="yesBtn">Sim!</button>
             <button id="noBtn">Não</button>
         </div>
@@ -149,75 +135,48 @@
         const message = document.getElementById('message');
         const question = document.getElementById('question');
         const btnContainer = document.getElementById('btnContainer');
-        const card = document.getElementById('card');
 
-        // Função para mover o botão "Não"
         function moveButton() {
-            // Calcula os limites dentro do cartão para o botão não sair muito
-            const cardRect = card.getBoundingClientRect();
-            const btnRect = noBtn.getBoundingClientRect();
-            
-            // Área segura para o botão se mover (dentro do ecrã visível)
-            const maxX = window.innerWidth - btnRect.width - 20;
-            const maxY = window.innerHeight - btnRect.height - 20;
-
-            const x = Math.random() * maxX;
-            const y = Math.random() * maxY;
-            
-            // Usa position fixed para garantir que foge para qualquer lado do ecrã
+            // Só agora é que o tornamos "flutuante" para ele fugir
             noBtn.style.position = 'fixed';
-            noBtn.style.left = `${x}px`;
-            noBtn.style.top = `${y}px`;
+            
+            const padding = 50;
+            const maxX = window.innerWidth - noBtn.offsetWidth - padding;
+            const maxY = window.innerHeight - noBtn.offsetHeight - padding;
+
+            const randomX = Math.max(padding, Math.random() * maxX);
+            const randomY = Math.max(padding, Math.random() * maxY);
+
+            noBtn.style.left = randomX + 'px';
+            noBtn.style.top = randomY + 'px';
         }
 
-        // Eventos para fugir (PC e Telemóvel)
         noBtn.addEventListener('mouseover', moveButton);
         noBtn.addEventListener('touchstart', (e) => {
             e.preventDefault();
             moveButton();
         });
 
-
-        // --- FUNÇÃO PARA CRIAR CORAÇÕES A CAIR ---
         function createFallingHeart() {
             const heart = document.createElement('div');
             heart.classList.add('falling-heart');
-            heart.innerHTML = '❤️'; // Podes mudar para '💖' ou '🌸'
-
-            // Posição horizontal aleatória
+            heart.innerHTML = '❤️';
             heart.style.left = Math.random() * 100 + 'vw';
-            
-            // Tamanho aleatório
-            const size = Math.random() * 1.5 + 0.8; // Entre 0.8rem e 2.3rem
+            const size = Math.random() * 1.5 + 0.8;
             heart.style.fontSize = size + 'rem';
-
-            // Duração da queda aleatória (entre 3s e 6s)
             const duration = Math.random() * 3 + 3;
             heart.style.animationDuration = duration + 's';
-
             document.body.appendChild(heart);
-
-            // Remove o coração do HTML depois de cair para não pesar na memória
-            setTimeout(() => {
-                heart.remove();
-            }, duration * 1000);
+            setTimeout(() => { heart.remove(); }, duration * 1000);
         }
 
-
-        // Ação ao clicar no "Sim"
         yesBtn.addEventListener('click', () => {
             question.style.display = 'none';
             btnContainer.style.display = 'none';
             message.style.display = 'block';
-            
-            // Remove o botão "Não" para ele não ficar perdido no ecrã
             noBtn.remove();
-
-            // Inicia a chuva de corações (cria um novo a cada 300ms)
             setInterval(createFallingHeart, 300);
-            
-            // Opcional: Mudar a cor do overlay para ficar mais rosado
-            document.body.style.backgroundColor = 'rgba(255, 77, 109, 0.3)';
+            document.body.style.backgroundColor = 'rgba(255, 77, 109, 0.4)';
         });
     </script>
 </body>
