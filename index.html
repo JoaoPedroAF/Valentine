@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Um pedido especial ❤️</title>
     <style>
         body {
@@ -11,21 +11,39 @@
             align-items: center;
             height: 100vh;
             margin: 0;
-            /* Se quiseres usar a imagem que gerei, podes pôr o link dela aqui */
-            background-color: #ffe4e1; 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            overflow: hidden; /* Evita scroll quando o botão foge */
+            overflow: hidden; /* Importante para os corações não criarem scroll */
+            
+            /* --- CONFIGURAÇÃO DA IMAGEM DE FUNDO --- */
+            /* Certifica-te que o nome da imagem aqui é IGUAL ao que subestime para o GitHub */
+            background-image: url('background.png'); 
+            background-size: cover;     /* Faz a imagem cobrir todo o ecrã */
+            background-position: center; /* Centra a imagem */
+            background-repeat: no-repeat;
+            /* Cor de recurso caso a imagem demore a carregar */
+            background-color: #ffe4e1;
+            transition: background-color 0.5s ease;
+        }
+
+        /* Um filtro escuro suave sobre a imagem para o texto se ler melhor */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.2); /* Ajusta o 0.2 para mais escuro ou mais claro */
+            z-index: 1;
         }
 
         #card {
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.95); /* Fundo do cartão ligeiramente mais opaco */
             padding: 2rem;
             border-radius: 20px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
             width: 85%;
             max-width: 400px;
             text-align: center;
-            z-index: 10;
+            z-index: 10; /* Garante que o cartão está acima do fundo e dos corações */
+            position: relative;
         }
 
         h1 {
@@ -40,6 +58,7 @@
             align-items: center;
             gap: 15px;
             height: 50px;
+            position: relative; /* Necessário para o botão fugir corretamente */
         }
 
         button {
@@ -49,19 +68,27 @@
             border-radius: 12px;
             cursor: pointer;
             font-weight: bold;
-            touch-action: manipulation; /* Melhora o toque no telemóvel */
+            touch-action: manipulation;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.1s;
+        }
+        
+        button:active {
+            transform: scale(0.95);
         }
 
         #yesBtn {
             background-color: #ff4d6d;
             color: white;
+            z-index: 20;
         }
 
         #noBtn {
             background-color: #888;
             color: white;
-            position: relative;
-            transition: 0.1s;
+            position: absolute; /* Mudado para absolute para fugir melhor dentro do contentor */
+            transition: all 0.2s ease;
+            z-index: 15;
         }
 
         #message {
@@ -69,7 +96,7 @@
             font-size: 1.3rem;
             color: #ff4d6d;
             font-weight: bold;
-            animation: appear 0.5s ease-in;
+            animation: appear 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Efeito elástico */
         }
 
         @keyframes appear {
@@ -77,20 +104,38 @@
             to { opacity: 1; transform: scale(1); }
         }
 
-        .heart {
+        .heart-icon {
             color: #ff4d6d;
             font-size: 3rem;
             margin-bottom: 10px;
+        }
+
+        /* --- ESTILO DOS CORAÇÕES A CAIR --- */
+        .falling-heart {
+            position: fixed;
+            top: -10vh;
+            font-size: 1.5rem;
+            color: #ff4d6d;
+            opacity: 0.8;
+            z-index: 5; /* Ficam atrás do cartão */
+            animation: fall linear forwards;
+            pointer-events: none; /* Para não interferirem com cliques */
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(110vh) rotate(360deg); /* Caem até sair do ecrã e rodam */
+            }
         }
     </style>
 </head>
 <body>
 
     <div id="card">
-        <div class="heart">❤️</div>
+        <div class="heart-icon">❤️</div>
         <h1 id="question">Queres ser a minha Valentine?</h1>
         
-        <div class="buttons" id="btnContainer">
+        <div class="buttons" id="btnContainer" style="height: 60px;">
             <button id="yesBtn">Sim!</button>
             <button id="noBtn">Não</button>
         </div>
@@ -104,33 +149,75 @@
         const message = document.getElementById('message');
         const question = document.getElementById('question');
         const btnContainer = document.getElementById('btnContainer');
+        const card = document.getElementById('card');
 
+        // Função para mover o botão "Não"
         function moveButton() {
-            // Calcula posições aleatórias, mas mantendo o botão dentro da área visível
-            const padding = 20;
-            const x = Math.random() * (window.innerWidth - noBtn.offsetWidth - padding);
-            const y = Math.random() * (window.innerHeight - noBtn.offsetHeight - padding);
+            // Calcula os limites dentro do cartão para o botão não sair muito
+            const cardRect = card.getBoundingClientRect();
+            const btnRect = noBtn.getBoundingClientRect();
             
+            // Área segura para o botão se mover (dentro do ecrã visível)
+            const maxX = window.innerWidth - btnRect.width - 20;
+            const maxY = window.innerHeight - btnRect.height - 20;
+
+            const x = Math.random() * maxX;
+            const y = Math.random() * maxY;
+            
+            // Usa position fixed para garantir que foge para qualquer lado do ecrã
             noBtn.style.position = 'fixed';
             noBtn.style.left = `${x}px`;
             noBtn.style.top = `${y}px`;
         }
 
-        // Foge no PC (Rato)
+        // Eventos para fugir (PC e Telemóvel)
         noBtn.addEventListener('mouseover', moveButton);
-
-        // Foge no Telemóvel (Toque)
         noBtn.addEventListener('touchstart', (e) => {
-            e.preventDefault(); // Impede o clique acidental ao tocar
+            e.preventDefault();
             moveButton();
         });
+
+
+        // --- FUNÇÃO PARA CRIAR CORAÇÕES A CAIR ---
+        function createFallingHeart() {
+            const heart = document.createElement('div');
+            heart.classList.add('falling-heart');
+            heart.innerHTML = '❤️'; // Podes mudar para '💖' ou '🌸'
+
+            // Posição horizontal aleatória
+            heart.style.left = Math.random() * 100 + 'vw';
+            
+            // Tamanho aleatório
+            const size = Math.random() * 1.5 + 0.8; // Entre 0.8rem e 2.3rem
+            heart.style.fontSize = size + 'rem';
+
+            // Duração da queda aleatória (entre 3s e 6s)
+            const duration = Math.random() * 3 + 3;
+            heart.style.animationDuration = duration + 's';
+
+            document.body.appendChild(heart);
+
+            // Remove o coração do HTML depois de cair para não pesar na memória
+            setTimeout(() => {
+                heart.remove();
+            }, duration * 1000);
+        }
+
 
         // Ação ao clicar no "Sim"
         yesBtn.addEventListener('click', () => {
             question.style.display = 'none';
             btnContainer.style.display = 'none';
             message.style.display = 'block';
-            document.body.style.backgroundColor = '#ffccd5';
+            
+            // Remove o botão "Não" para ele não ficar perdido no ecrã
+            noBtn.remove();
+
+            // Inicia a chuva de corações (cria um novo a cada 300ms)
+            setInterval(createFallingHeart, 300);
+            
+            // Opcional: Mudar a cor do overlay para ficar mais rosado
+            document.body.style.backgroundColor = 'rgba(255, 77, 109, 0.3)';
         });
     </script>
 </body>
